@@ -210,7 +210,7 @@ func (scanner *Scanner) Identifier() {
 	}
 	text := scanner.Source[scanner.Start:scanner.Current]
 	tokenType, exists := keywords[string(text)]
-	// fmt.Printf("text::%s, tokenType::%s\n", text, tokenType.String())
+  // fmt.Printf("exists::%v, text::%s, tokenType::%s\n", exists, text, tokenType.String())
 	if !exists {
 		tokenType = IDENTIFIER
 	}

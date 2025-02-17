@@ -15,7 +15,7 @@ func TestAstPrinter(t *testing.T) {
 		{
 			name: "test literal expression",
 			expr: &LiteralExpr{
-				Value: "123",
+				Value: StringLiteral("123"),
 			},
 			expected: "123",
 		},
@@ -23,7 +23,7 @@ func TestAstPrinter(t *testing.T) {
 			name: "test grouping expression",
 			expr: &GroupingExpr{
 				Expression: &LiteralExpr{
-					Value: "123",
+					Value: StringLiteral("123"),
 				},
 			},
 			expected: "(group 123)",
@@ -33,7 +33,7 @@ func TestAstPrinter(t *testing.T) {
 			expr: &UnaryExpr{
 				Operator: Token{MINUS, "-", nil, 1},
 				Right: &LiteralExpr{
-					Value: "2",
+					Value: StringLiteral("2"),
 				},
 			},
 			expected: "(- 2)",
@@ -45,10 +45,10 @@ func TestAstPrinter(t *testing.T) {
 					Lexeme: "+",
 				},
 				Left: &LiteralExpr{
-					Value: "1",
+					Value: StringLiteral("1"),
 				},
 				Right: &LiteralExpr{
-					Value: "2",
+					Value: StringLiteral("2"),
 				},
 			},
 			expected: "(+ 1 2)",
@@ -64,12 +64,12 @@ func TestAstPrinter(t *testing.T) {
 						Lexeme: "-",
 					},
 					Right: &LiteralExpr{
-						Value: "123",
+						Value: StringLiteral("123"),
 					},
 				},
 				Right: &GroupingExpr{
 					Expression: &LiteralExpr{
-						Value: "45.67",
+						Value: StringLiteral("45.67"),
 					},
 				},
 			},
@@ -80,7 +80,7 @@ func TestAstPrinter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := printer.Print(tt.expr)
-			if result != tt.expected {
+			if string(result.(StringResult)) != tt.expected {
 				t.Errorf("got %q, want %q", result, tt.expected)
 			}
 		})

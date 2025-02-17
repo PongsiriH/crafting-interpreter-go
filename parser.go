@@ -1,15 +1,24 @@
 package main
 
+import "fmt"
+
 type ParseResult struct {
-  expression Expr;
-  HadError bool;
+	Expression Expr
+	HadError   bool
 }
 
-// func ParseSuccess(expression Expr) {
-//   return ParseResult {}
-// }
+func ParseSuccess(expression Expr) ParseResult {
+	return ParseResult{
+		Expression: expression,
+		HadError:   false,
+	}
+}
 
-
+func ParseFailed() ParseResult {
+	return ParseResult{
+		HadError: true,
+	}
+}
 
 type Parser struct {
 	Tokens  []Token
@@ -35,6 +44,7 @@ func (parser *Parser) Match(tokenTypes []TokenType) bool {
 }
 
 func (parser *Parser) Check(tokenType TokenType) bool {
+	fmt.Println("Check", parser.IsAtEnd(), parser.Peek())
 	if parser.IsAtEnd() {
 		return false
 	}
@@ -111,28 +121,42 @@ func (parser *Parser) Unary() Expr {
 		right := parser.Unary()
 		return &UnaryExpr{operator, right}
 	}
-	return parser.Primary()
+	parseResult := parser.Primary()
+	if parseResult.HadError {
+		fmt.Println("Failed to parse: ")
+	}
+	return parseResult.Expression
 }
 
-func (parser *Parser) Primary() Expr {
+func (parser *Parser) Primary() ParseResult {
+	fmt.Println("bye? ", parser.Tokens, parser.Current, parser.Peek())
 	if parser.Match([]TokenType{FALSE}) {
-		return &LiteralExpr{FALSE}
+		return ParseSuccess(&LiteralExpr{BoolLiteral(FALSE)})
 	}
 	if parser.Match([]TokenType{TRUE}) {
-		return &LiteralExpr{Value: TRUE}
+		return ParseSuccess(&LiteralExpr{Value: BoolLiteral(TRUE)})
 	}
 	if parser.Match([]TokenType{NIL}) {
-		return &LiteralExpr{Value: nil}
+		return ParseSuccess(&LiteralExpr{Value: nil})
 	}
-	if parser.Match([]TokenType{NUMBER, STRING}) {
-		return &LiteralExpr{parser.Previous().Literal}
+	if parser.Match([]TokenType{NUMBER}) {
+		return ParseSuccess(&LiteralExpr{NumberLiteral(parser.Previous().Literal.(float64))})
+	}
+	if parser.Match([]TokenType{STRING}) {
+		return ParseSuccess(&LiteralExpr{StringLiteral(parser.Previous().Literal.([]byte))})
+	}
+	if parser.Match([]TokenType{IDENTIFIER}) {
+		// return ParseSuccess(&VariableExpr{parser.Previous()}) // Assuming you have a VariableExpr type
 	}
 	if parser.Match([]TokenType{LEFT_BRACE}) {
 		expr := parser.Expression()
 		parser.Consume(RIGHT_BRACE, "Expect ')' after expression.")
-		return &GroupingExpr{expr}
+		return ParseSuccess(&GroupingExpr{expr})
 	}
-	return &LiteralExpr{nil} // ERROR
+	fmt.Println("hello? ", parser.Current, parser.Peek())
+	filade := ParseFailed()
+	filade.Expression = &LiteralExpr{StringLiteral("please work")}
+	return filade
 }
 
 func (parser *Parser) Consume(tokenType TokenType, message string) Token {
@@ -144,9 +168,9 @@ func (parser *Parser) Consume(tokenType TokenType, message string) Token {
 }
 
 func (parser *Parser) Error(token Token, message string) {
-  error(token, message)
+	error(token, message)
 }
 
 func (parser *Parser) Parse() Expr {
-  return parser.Expression()
+	return parser.Expression()
 }
