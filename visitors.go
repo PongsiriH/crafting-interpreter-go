@@ -1,37 +1,70 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
-type AstPrinter[T string] struct {}
-
-func (printer *AstPrinter[T]) Print(expr Expr[T]) T {
-  return expr.Accept(printer)
-}
-
-func (printer *AstPrinter[T]) VisitBinaryExpr(expr *BinaryExpr[T]) T {
-  exprs := []Expr[T]{expr.Left, expr.Right}
-  return printer.Paranthesize(expr.Operator.Lexeme, exprs)
-}
-func (printer *AstPrinter[T]) VisitGroupingExpr(expr *GroupingExpr[T]) T {
-  exprs := []Expr[T]{expr.Expression}
-  return printer.Paranthesize("group", exprs)
-}
-func (printer *AstPrinter[T]) VisitLiteralExpr(expr *LiteralExpr[T]) T {
-  return expr.Value
-}
-func (printer *AstPrinter[T]) VisitUnaryExpr(expr *UnaryExpr[T]) T {
-  exprs := []Expr[T]{expr.Right}
-  return printer.Paranthesize(expr.Operator.Lexeme, exprs)
+// visitors (Printer, Interpreter, TypeChecker)
+type BaseVisitor interface {
+	VisitBinaryExpr(expr *BinaryExpr) any
+	VisitUnaryExpr(expr *UnaryExpr) any
+	VisitLiteralExpr(expr *LiteralExpr) any
+	VisitGroupingExpr(expr *GroupingExpr) any
 }
 
-func (printer *AstPrinter[T]) Paranthesize(name string, exprs []Expr[T]) T {
-  var builder strings.Builder
-  builder.WriteString("(")
-  builder.WriteString(name)
-  for _, expr := range exprs {
-    builder.WriteString(" ")
-    builder.WriteString( string( expr.Accept(printer) ) )
-  }
-  builder.WriteString(")")
-  return T(builder.String())
+type Visitor[R ExprResult] interface {
+	BaseVisitor
 }
+
+// ---- AstPrinter ---- 
+type AstPrinter struct{}
+
+func (printer *AstPrinter) Print(expr Expr) any {
+	return expr.Accept(printer)
+}
+
+func (printer *AstPrinter) VisitBinaryExpr(expr *BinaryExpr) any {
+	exprs := []Expr{expr.Left, expr.Right}
+	return printer.Parenthesize(expr.Operator.Lexeme, exprs)
+}
+func (printer *AstPrinter) VisitGroupingExpr(expr *GroupingExpr) any {
+	exprs := []Expr{expr.Expression}
+	return printer.Parenthesize("group", exprs)
+}
+func (printer *AstPrinter) VisitLiteralExpr(expr *LiteralExpr) any {
+	return expr.Value
+}
+func (printer *AstPrinter) VisitUnaryExpr(expr *UnaryExpr) any {
+	exprs := []Expr{expr.Right}
+	return printer.Parenthesize(expr.Operator.Lexeme, exprs)
+}
+
+func (printer *AstPrinter) Parenthesize(name string, exprs []Expr) any {
+	var builder strings.Builder
+	builder.WriteString("(")
+	builder.WriteString(name)
+
+	for _, expr := range exprs {
+		builder.WriteString(" ")
+
+		result := expr.Accept(printer)
+		switch v := result.(type) {
+		case string:
+			builder.WriteString(v)
+		case float32:
+			builder.WriteString(fmt.Sprintf("%g", v))
+		case float64:
+			builder.WriteString(fmt.Sprintf("%g", v))
+		default:
+			builder.WriteString(fmt.Sprintf("%v", v))
+		}
+	}
+
+	builder.WriteString(")")
+	return builder.String()
+}
+
+// Interpreter
+type Interpreter struct {}
+
