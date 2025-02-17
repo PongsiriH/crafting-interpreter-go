@@ -15,7 +15,7 @@ func runFile(file_path string) {
 		fmt.Println("Failed to open file provided.")
 		os.Exit(1)
 	}
-	run(string(file))
+	run(file)
 	if hadError {
 		os.Exit(1)
 	}
@@ -26,8 +26,8 @@ func runPrompt() {
 	for {
 		fmt.Print("> ")
 		if scanner.Scan() {
-			line := scanner.Text() // This only read line at a time?
-			run(line)
+			line := scanner.Bytes() // This only read line at a time?
+      run(line)
 			hadError = false
 		} else {
 			// Check for errors or EOF
@@ -41,16 +41,28 @@ func runPrompt() {
 	}
 }
 
-func run(source string) {
+func run(source []byte) {
 	scanner := NewScanner(source)
 	tokens := scanner.ScanTokens()
 	for _, token := range tokens {
 		fmt.Println(token.toString())
 	}
+
+  parser := NewParser(tokens)
+  expressions := parser.Parse()
+  if hadError {
+    return
+  }
+  astPrinter := AstPrinter{}
+  fmt.Println(astPrinter.Print(expressions))
+  astPrinter.Print(expressions)
 }
 
-func error(line int, message string) {
-	fmt.Printf("[line %d] Error: %s\n", line, message)
+func error(token Token, message string) {
+  if token.Type == EOF {
+	fmt.Printf("[line %d] Error at end %s\n", token.Line, message)
+  }
+  fmt.Printf("[line %d] Error at '%s': %s\n", token.Line, token.Lexeme, message)
 }
 
 func main() {

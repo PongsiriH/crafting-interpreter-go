@@ -6,14 +6,14 @@ import (
 )
 
 type Scanner struct {
-	Source  string
+	Source  []byte
 	Tokens  []Token
 	Start   int
 	Current int
 	Line    int
 }
 
-func NewScanner(source string) Scanner {
+func NewScanner(source []byte) Scanner {
 	return Scanner{
 		Source:  source,
 		Tokens:  []Token{},
@@ -113,13 +113,18 @@ func (scanner *Scanner) ScanToken() {
 		} else {
 			scanner.AddToken(SLASH, nil)
 		}
+  case byte(10): {
+    // newline "\n" is translated to 10
+  }
 	case '\\':
-		if scanner.Match('r') || scanner.Match('t') {
+		if scanner.Match('n') || scanner.Match('r') || scanner.Match('t') {
 			// Do nothgin
+      fmt.Println("NEWIQNIWANEIWANEIWN NEWLINEEEEE")
 		} else if scanner.Match('n') {
 			scanner.Line += 1
 		} else {
-			error(scanner.Line, "Unexpected character")
+      fmt.Println("CURRENTNNTNTNTENENNTT", scanner.Current)
+			error(scanner.Tokens[len(scanner.Tokens)-1], "Unexpected character")
 		}
 	case ' ': // Do nothing
 	case '"':
@@ -130,7 +135,13 @@ func (scanner *Scanner) ScanToken() {
 		} else if isAlpha(c) {
 			scanner.Identifier()
 		} else {
-			error(scanner.Line, "Unexpected character")
+      for i:=0; i<len(scanner.Source); i++ {
+        fmt.Println("Hello source: ", scanner.Source[i], string(scanner.Source[i]))
+      }
+      fmt.Println("CURRENTNNTNTNTENENNTT222", scanner.IsAtEnd(), len(scanner.Source), scanner.Current)
+      fmt.Println("CURRENTNNTNTNTENENNTT222", scanner.Source)
+      fmt.Println("CURRENTNNTNTNTENENNTT222", string( scanner.Source ))
+			error(scanner.Tokens[len(scanner.Tokens)-1], "Unexpected character")
 		}
 	}
 }
@@ -143,7 +154,7 @@ func (scanner *Scanner) Advance() byte {
 
 func (scanner *Scanner) AddToken(tokenType TokenType, literal any) {
 	lexeme := scanner.Source[scanner.Start:scanner.Current]
-	scanner.Tokens = append(scanner.Tokens, Token{tokenType, lexeme, literal, scanner.Line})
+	scanner.Tokens = append(scanner.Tokens, Token{tokenType, string(lexeme), literal, scanner.Line})
 }
 
 func (scanner *Scanner) Match(expected byte) bool {
@@ -164,7 +175,7 @@ func (scanner *Scanner) String() {
 	}
 
 	if scanner.IsAtEnd() {
-		error(scanner.Line, "Unterminated String")
+		error(scanner.Tokens[scanner.Current], "Unterminated String")
 		return
 	}
 	// fmt.Println("Now we are at: ", string( scanner.Source[scanner.Current] ))
@@ -186,9 +197,9 @@ func (scanner *Scanner) Number() {
 	}
 	num_str := scanner.Source[scanner.Start:scanner.Current]
 	// fmt.Printf("num_str::%s\n", num_str)
-	num, err := strconv.ParseFloat(num_str, 32)
+	num, err := strconv.ParseFloat(string(num_str), 32)
 	if err != nil {
-		error(scanner.Line, fmt.Sprintf("Internal error: %s", err))
+		error(scanner.Tokens[scanner.Current], fmt.Sprintf("Internal error: %s", err))
 	}
 	scanner.AddToken(NUMBER, num)
 }
@@ -198,7 +209,7 @@ func (scanner *Scanner) Identifier() {
 		scanner.Advance()
 	}
 	text := scanner.Source[scanner.Start:scanner.Current]
-	tokenType, exists := keywords[text]
+	tokenType, exists := keywords[string(text)]
 	// fmt.Printf("text::%s, tokenType::%s\n", text, tokenType.String())
 	if !exists {
 		tokenType = IDENTIFIER

@@ -5,24 +5,24 @@ import (
 )
 
 func TestAstPrinter(t *testing.T) {
-	printer := &AstPrinter[string]{}
+	printer := &AstPrinter{}
 
 	tests := []struct {
 		name     string
-		expr     Expr[string]
+		expr     Expr
 		expected string
 	}{
 		{
 			name: "test literal expression",
-			expr: &LiteralExpr[string]{
+			expr: &LiteralExpr{
 				Value: "123",
 			},
 			expected: "123",
 		},
 		{
 			name: "test grouping expression",
-			expr: &GroupingExpr[string]{
-				Expression: &LiteralExpr[string]{
+			expr: &GroupingExpr{
+				Expression: &LiteralExpr{
 					Value: "123",
 				},
 			},
@@ -30,9 +30,9 @@ func TestAstPrinter(t *testing.T) {
 		},
 		{
 			name: "test unary expresion",
-			expr: &UnaryExpr[string]{
+			expr: &UnaryExpr{
 				Operator: Token{MINUS, "-", nil, 1},
-				Right: &LiteralExpr[string]{
+				Right: &LiteralExpr{
 					Value: "2",
 				},
 			},
@@ -40,14 +40,14 @@ func TestAstPrinter(t *testing.T) {
 		},
 		{
 			name: "test binary expression",
-			expr: &BinaryExpr[string]{
+			expr: &BinaryExpr{
 				Operator: Token{
 					Lexeme: "+",
 				},
-				Left: &LiteralExpr[string]{
+				Left: &LiteralExpr{
 					Value: "1",
 				},
-				Right: &LiteralExpr[string]{
+				Right: &LiteralExpr{
 					Value: "2",
 				},
 			},
@@ -55,20 +55,20 @@ func TestAstPrinter(t *testing.T) {
 		},
 		{
 			name: "test complex expression",
-			expr: &BinaryExpr[string]{
+			expr: &BinaryExpr{
 				Operator: Token{
 					Lexeme: "*",
 				},
-				Left: &UnaryExpr[string]{
+				Left: &UnaryExpr{
 					Operator: Token{
 						Lexeme: "-",
 					},
-					Right: &LiteralExpr[string]{
+					Right: &LiteralExpr{
 						Value: "123",
 					},
 				},
-				Right: &GroupingExpr[string]{
-					Expression: &LiteralExpr[string]{
+				Right: &GroupingExpr{
+					Expression: &LiteralExpr{
 						Value: "45.67",
 					},
 				},
