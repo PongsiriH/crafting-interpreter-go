@@ -1,4 +1,4 @@
-What I learn through building each thing
+What I feel through building each thing
 ### Scanner
 - This section is quite tedious. One nice pattern is having StartIndex pointing at starting charcter of the "token" and CurrentIndex to point to the last character of the "token", then just take substring from SourceString.
 
