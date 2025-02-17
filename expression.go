@@ -2,7 +2,7 @@ package main
 
 // expressions (Binary, Unary, Literal, etc.)
 type ExprResult interface {
-  string | float32 | bool
+
 }
 
 type Expr interface {
