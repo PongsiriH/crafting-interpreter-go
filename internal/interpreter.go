@@ -160,3 +160,14 @@ func (i *Interpreter) VisitBlock(stmt Block) any {
 	}
 	return output
 }
+
+func (i *Interpreter) VisitIfStmt(stmt IfStmt) any {
+  var output any
+  if isTruthy(stmt.Condition.Apply(i)) {
+    output = stmt.ThenBranch.Apply(i)
+  } else {
+    output = stmt.ElseBranch.Apply(i)
+  }
+  return output
+}
+

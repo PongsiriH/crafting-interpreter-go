@@ -108,7 +108,6 @@ func (s *Scanner) scanToken() {
 
 func (s *Scanner) ProcessString() {
 	for s.Current < len(s.Source) && s.Source[s.Current] != '\n' {
-    fmt.Println("Processing string:", string(s.Source[s.Current]))
 		if s.Source[s.Current] == '"' {
 			s.Current++
 			text := string(s.Source[s.Start+1 : s.Current-1])

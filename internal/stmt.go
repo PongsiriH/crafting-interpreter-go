@@ -9,6 +9,7 @@ type VisitorStmt interface {
 	VisitPrint(Print) any
 	VisitVarDeclare(VarDeclare) any
 	VisitBlock(Block) any
+  VisitIfStmt(IfStmt) any
 }
 
 type Expression struct {
@@ -25,7 +26,13 @@ type VarDeclare struct {
 }
 
 type Block struct {
-  Statements []Stmt
+	Statements []Stmt
+}
+
+type IfStmt struct {
+	Condition  Expr
+	ThenBranch Stmt
+  ElseBranch Stmt
 }
 
 func (stmt Expression) Apply(v VisitorStmt) any {
@@ -37,10 +44,13 @@ func (stmt Print) Apply(v VisitorStmt) any {
 }
 
 func (stmt VarDeclare) Apply(v VisitorStmt) any {
-  return v.VisitVarDeclare(stmt)
+	return v.VisitVarDeclare(stmt)
 }
 
 func (stmt Block) Apply(v VisitorStmt) any {
-  return v.VisitBlock(stmt)
+	return v.VisitBlock(stmt)
 }
 
+func (stmt IfStmt) Apply(v VisitorStmt) any {
+  return v.VisitIfStmt(stmt)
+}

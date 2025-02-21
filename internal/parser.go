@@ -30,15 +30,15 @@ func (p *Parser) Declaration() Stmt {
 }
 
 func (p *Parser) VarDeclaration() Stmt {
-  p.Consume(IDENTIFIER, "Expected variable name.")
-  name := p.Tokens[p.Current-1]
-  var val Expr
-  if p.Match(EQUAL) {
-    p.Current++
-    val = p.Expression()
-  }
-  p.Consume(SEMICOLON, "Expected semicolon `;' after variable declaration.")
-  return VarDeclare{name.Lexeme, val}
+	p.Consume(IDENTIFIER, "Expected variable name.")
+	name := p.Tokens[p.Current-1]
+	var val Expr
+	if p.Match(EQUAL) {
+		p.Current++
+		val = p.Expression()
+	}
+	p.Consume(SEMICOLON, "Expected semicolon `;' after variable declaration.")
+	return VarDeclare{name.Lexeme, val}
 }
 
 func (p *Parser) Statement() Stmt {
@@ -47,11 +47,20 @@ func (p *Parser) Statement() Stmt {
 		return p.PrintStmt()
 	}
 
-  if p.Match(LEFT_BRACE) {
-    p.Current++
-    return p.BlockStmt()
-  }
+	if p.Match(LEFT_BRACE) {
+		p.Current++
+		return p.BlockStmt()
+	}
 
+	if p.Match(VAR) {
+		p.Current++
+		return p.VarDeclaration()
+	}
+
+	if p.Match(IF) {
+		p.Current++
+		return p.IfStmt()
+	}
 	return p.ExpressionStmt()
 }
 
@@ -68,31 +77,45 @@ func (p *Parser) ExpressionStmt() Stmt {
 }
 
 func (p *Parser) BlockStmt() Stmt {
-  statements := []Stmt{}
-  for !p.Match(RIGHT_BRACE) && p.Tokens[p.Current].TokenType != EOF {
-    statements = append(statements, p.Declaration())
-  }
-  p.Consume(RIGHT_BRACE, "Expected closing brace `}' after block.")
-  return Block{statements}
+	statements := []Stmt{}
+	for !p.Match(RIGHT_BRACE) && p.Tokens[p.Current].TokenType != EOF {
+		statements = append(statements, p.Declaration())
+	}
+	p.Consume(RIGHT_BRACE, "Expected closing brace `}' after block.")
+	return Block{statements}
+}
+
+func (p *Parser) IfStmt() Stmt {
+	p.Consume(LEFT_PAREN, "Expected opening parenthesis '(' after if.")
+	condition := p.Expression()
+	p.Consume(RIGHT_PAREN, "Expected closing parenthesis ')' after expression.")
+
+	thenBranch := p.Statement()
+	var elseBranch Stmt
+	if p.Match(ELSE) {
+		p.Current++
+		elseBranch = p.Statement()
+	}
+	return IfStmt{condition, thenBranch, elseBranch}
 }
 
 func (p *Parser) Expression() Expr {
-  return p.Assignment()
+	return p.Assignment()
 }
 
 func (p *Parser) Assignment() Expr {
-  expr := p.Equality()
-  if p.Match(EQUAL) {
-    p.Current++
-    value := p.Assignment()
-    expr, ok := expr.(*Variable)
-    if ok {
-      return &Assignment{expr.Name, value}
-    }
+	expr := p.Equality()
+	if p.Match(EQUAL) {
+		p.Current++
+		value := p.Assignment()
+		expr, ok := expr.(*Variable)
+		if ok {
+			return &Assignment{expr.Name, value}
+		}
 
-    panic("Invalid assignment target")
-  }
- 	return expr
+		panic("Invalid assignment target")
+	}
+	return expr
 }
 
 func (p *Parser) Equality() Expr {
