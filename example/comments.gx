@@ -1,0 +1,2 @@
+var hello = "two"; // hehe, to confuse someone reading this.
+print "hello";
