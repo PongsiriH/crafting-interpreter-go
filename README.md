@@ -10,3 +10,7 @@ What I feel through building each thing
 ### Parser
 - Well, this section is probably the most challenging one so far with recursive calls between Expression, Equality, Comparision, Term, Factor, Unary and Primary.
 - This is when my codebase is becoming quite complex and probably need to start adding error handlings.
+
+### Printing, Declaring variable and Assigning variable
+
+### Block, If-else
