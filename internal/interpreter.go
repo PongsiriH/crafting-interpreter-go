@@ -2,12 +2,21 @@ package internal
 
 import "fmt"
 
-type Interpreter struct{}
+type Interpreter struct {
+	globalEnv *Environment
+	env       *Environment
+}
+
+func NewInterpreter() *Interpreter {
+	return &Interpreter{
+		globalEnv: &env,
+		env:       &env,
+	}
+}
 
 func (i *Interpreter) Interpret(statements []Stmt) {
 	for _, stmt := range statements {
-		result := stmt.Apply(i)
-		fmt.Println(">", result)
+		stmt.Apply(i)
 	}
 }
 
@@ -110,7 +119,7 @@ func (i *Interpreter) VisitUnaryExpr(expr Unary) any {
 }
 
 func (i *Interpreter) VisitVariableExpr(expr Variable) any {
-	return env.Get(expr.Name.Lexeme)
+	return i.env.Get(expr.Name.Lexeme)
 }
 
 func (i *Interpreter) VisitExpression(stmt Expression) any {
@@ -118,7 +127,9 @@ func (i *Interpreter) VisitExpression(stmt Expression) any {
 }
 
 func (i *Interpreter) VisitPrint(stmt Print) any {
-	return stmt.Expr.Apply(i)
+  val := stmt.Expr.Apply(i)
+  fmt.Println(">>", val)
+  return val
 }
 
 func (i *Interpreter) VisitVarDeclare(stmt VarDeclare) any {
@@ -126,12 +137,26 @@ func (i *Interpreter) VisitVarDeclare(stmt VarDeclare) any {
 	if stmt.InitialExpr != nil {
 		value = stmt.InitialExpr.Apply(i)
 	}
-	env.Define(stmt.Name, value)
+	i.env.Define(stmt.Name, value)
 	return nil
 }
 
-func (i *Interpreter) VisitAssignmentExpr(stmt Assignment) any {
-	value := stmt.Value.Apply(i)
-	env.Define(stmt.Name.Lexeme, value)
+func (i *Interpreter) VisitAssignmentExpr(expr Assignment) any {
+	value := expr.Value.Apply(i)
+	i.env.Define(expr.Name.Lexeme, value)
 	return nil
+}
+
+func (i *Interpreter) VisitBlock(stmt Block) any {
+	upperEnv := i.env
+	defer func() {
+		i.env = upperEnv
+	}()
+	i.env = NewEnvironment(*upperEnv)
+	
+  var output any
+	for _, statement := range stmt.Statements {
+		output = statement.Apply(i)
+	}
+	return output
 }

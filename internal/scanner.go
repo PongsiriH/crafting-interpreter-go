@@ -57,6 +57,20 @@ func (s *Scanner) scanToken() {
 	case '\n':
 		{
 		}
+	case '<':
+		if s.Source[s.Current] == '=' {
+			s.Current++
+			s.AddToken(LESS_EQUAL, nil)
+		} else {
+			s.AddToken(LESS, nil)
+		}
+	case '>':
+		if s.Source[s.Current] == '=' {
+			s.Current++
+			s.AddToken(GREATER_EQUAL, nil)
+		} else {
+			s.AddToken(GREATER, nil)
+		}
 	case '=':
 		if s.Source[s.Current] == '=' {
 			s.Current++
@@ -80,7 +94,6 @@ func (s *Scanner) scanToken() {
 			s.AddToken(SLASH, nil)
 		}
 	case '"':
-		s.Current++
 		s.ProcessString()
 	default:
 		if isAlpha(c) {
@@ -94,20 +107,17 @@ func (s *Scanner) scanToken() {
 }
 
 func (s *Scanner) ProcessString() {
-	foundClosingQuote := false
 	for s.Current < len(s.Source) && s.Source[s.Current] != '\n' {
+    fmt.Println("Processing string:", string(s.Source[s.Current]))
 		if s.Source[s.Current] == '"' {
-			foundClosingQuote = true
 			s.Current++
 			text := string(s.Source[s.Start+1 : s.Current-1])
 			s.Tokens = append(s.Tokens, NewToken(STRING, text, text, s.Line))
-			break
+      return
 		}
 		s.Current++
 	}
-	if !foundClosingQuote {
-		panic("Expected closing '\"' for a string")
-	}
+  panic("Expected closing '\"' for a string")
 }
 
 func (s *Scanner) ProcessNumber() {

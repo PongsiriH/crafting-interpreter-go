@@ -23,7 +23,7 @@ func run(source_code []byte) {
   parsedExpression := parser.Parse()
   fmt.Printf("parsedExpression: %s\n", parsedExpression) 
 
-  interpreter := gx.Interpreter{}
+  interpreter := gx.NewInterpreter()
   interpreter.Interpret(parsedExpression)
 }
 

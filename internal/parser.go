@@ -46,19 +46,34 @@ func (p *Parser) Statement() Stmt {
 		p.Current++
 		return p.PrintStmt()
 	}
+
+  if p.Match(LEFT_BRACE) {
+    p.Current++
+    return p.BlockStmt()
+  }
+
 	return p.ExpressionStmt()
 }
 
 func (p *Parser) PrintStmt() Stmt {
 	expr := p.Expression()
-	p.Consume(SEMICOLON, "Expected closing quatation `;' after expression.")
+	p.Consume(SEMICOLON, "Expected semicolon `;' after expression.")
 	return Print{expr}
 }
 
 func (p *Parser) ExpressionStmt() Stmt {
 	expr := p.Expression()
-	p.Consume(SEMICOLON, "Expected closing quatation `;' after expression.")
-	return Print{expr}
+	p.Consume(SEMICOLON, "Expected semicolon `;' after expression.")
+	return Expression{expr}
+}
+
+func (p *Parser) BlockStmt() Stmt {
+  statements := []Stmt{}
+  for !p.Match(RIGHT_BRACE) && p.Tokens[p.Current].TokenType != EOF {
+    statements = append(statements, p.Declaration())
+  }
+  p.Consume(RIGHT_BRACE, "Expected closing brace `}' after block.")
+  return Block{statements}
 }
 
 func (p *Parser) Expression() Expr {

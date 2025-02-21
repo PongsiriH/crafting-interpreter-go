@@ -1,4 +1,7 @@
-"hello";
-"no please";
-"yes" + "sir";
-"you"+"sure?";
+print "hello";
+print "no please";
+print "yes" + "sir";
+print "you"+"sure?";
+print "?";
+print 2;
+print "\n  3";
