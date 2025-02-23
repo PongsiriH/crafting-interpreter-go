@@ -11,6 +11,17 @@ What I feel through building each thing
 - Well, this section is probably the most challenging one so far with recursive calls between Expression, Equality, Comparision, Term, Factor, Unary and Primary.
 - This is when my codebase is becoming quite complex and probably need to start adding error handlings.
 
-### Printing, Declaring variable and Assigning variable
+### Statements
+- This section pretty much make our interpreter look like an actual one... Previously it just seem like calculator that only accept single expression.
+- Now, the interpreter can have a list of statements and executable.
+
+### Printing, Declaring variable and Assigning variable, Scoping
+- Defined printing statements which, as the name implied, print to the stdout.
+- Defined `environment` which store variables which we can `Define`, `Assign`, and `Read`.
+- *Scoping by recursively pointing back to the parent environment. In Java, author use `finally` keywords, but we use `defer` here... which feel nice somehow :).
 
 ### Block, If-else
+- I am thinking of enforcing curling braces {} after `if` statement instead of allowing single-line without curly braces.. should I?
+### Logical expression, While-loop, For-loop
+- FOR LOOP IS JUST SO TEDIUS!
+- I think I am getting used to this now? Maybe not so much... we have like 4 chapters left for golox so let not be overconfident.
