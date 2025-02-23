@@ -127,9 +127,9 @@ func (i *Interpreter) VisitExpression(stmt Expression) any {
 }
 
 func (i *Interpreter) VisitPrint(stmt Print) any {
-  val := stmt.Expr.Apply(i)
-  fmt.Println(">>", val)
-  return val
+	val := stmt.Expr.Apply(i)
+	fmt.Println(">>", val)
+	return val
 }
 
 func (i *Interpreter) VisitVarDeclare(stmt VarDeclare) any {
@@ -143,7 +143,7 @@ func (i *Interpreter) VisitVarDeclare(stmt VarDeclare) any {
 
 func (i *Interpreter) VisitAssignmentExpr(expr Assignment) any {
 	value := expr.Value.Apply(i)
-	i.env.Define(expr.Name.Lexeme, value)
+	i.env.Assign(expr.Name.Lexeme, value)
 	return nil
 }
 
@@ -153,8 +153,8 @@ func (i *Interpreter) VisitBlock(stmt Block) any {
 		i.env = upperEnv
 	}()
 	i.env = NewEnvironment(*upperEnv)
-	
-  var output any
+
+	var output any
 	for _, statement := range stmt.Statements {
 		output = statement.Apply(i)
 	}
@@ -162,12 +162,47 @@ func (i *Interpreter) VisitBlock(stmt Block) any {
 }
 
 func (i *Interpreter) VisitIfStmt(stmt IfStmt) any {
-  var output any
-  if isTruthy(stmt.Condition.Apply(i)) {
-    output = stmt.ThenBranch.Apply(i)
-  } else {
-    output = stmt.ElseBranch.Apply(i)
-  }
-  return output
+	var output any
+	if isTruthy(stmt.Condition.Apply(i)) {
+		output = stmt.ThenBranch.Apply(i)
+	} else {
+		output = stmt.ElseBranch.Apply(i)
+	}
+	return output
 }
 
+func (i *Interpreter) VisitLogicalExpr(expr Logic) any {
+	left := expr.Left.Apply(i)
+	op := expr.Operator.TokenType
+	switch op {
+	case OR:
+		if isTruthy(left) {
+			return true
+		}
+	case AND:
+		if !isTruthy(left) {
+			return false
+		}
+	}
+	right := expr.Right.Apply(i)
+	return isTruthy(right)
+}
+
+func (i *Interpreter) VisitWhileStmt(expr WhileStmt) any {
+	cond := expr.Condition.Apply(i)
+	for isTruthy(cond) {
+		expr.Body.Apply(i)
+		cond = expr.Condition.Apply(i)
+	}
+	return nil
+}
+
+func (i *Interpreter) VisitCallExpr(expr Call) any {
+	// callee := expr.Callee.Apply(i)
+	// args := []any{}
+	// for _, arg := range expr.Arguments {
+	//   args = append(args, arg)
+	// }
+	// callable, _ := callee.(Callable)
+	return nil
+}

@@ -9,7 +9,8 @@ type VisitorStmt interface {
 	VisitPrint(Print) any
 	VisitVarDeclare(VarDeclare) any
 	VisitBlock(Block) any
-  VisitIfStmt(IfStmt) any
+	VisitIfStmt(IfStmt) any
+	VisitWhileStmt(WhileStmt) any
 }
 
 type Expression struct {
@@ -32,7 +33,12 @@ type Block struct {
 type IfStmt struct {
 	Condition  Expr
 	ThenBranch Stmt
-  ElseBranch Stmt
+	ElseBranch Stmt
+}
+
+type WhileStmt struct {
+	Condition Expr
+	Body      Stmt
 }
 
 func (stmt Expression) Apply(v VisitorStmt) any {
@@ -52,5 +58,9 @@ func (stmt Block) Apply(v VisitorStmt) any {
 }
 
 func (stmt IfStmt) Apply(v VisitorStmt) any {
-  return v.VisitIfStmt(stmt)
+	return v.VisitIfStmt(stmt)
+}
+
+func (stmt WhileStmt) Apply(v VisitorStmt) any {
+	return v.VisitWhileStmt(stmt)
 }

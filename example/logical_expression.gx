@@ -1,0 +1,5 @@
+print "Logical expression";
+print true and true; // true
+print true and false; // false
+print "hi" or 2; // true
+print nil or "yes"; // true

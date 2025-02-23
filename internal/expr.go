@@ -12,7 +12,9 @@ type VisitorExpr interface {
 	VisitLiteralExpr(expr Literal) any
 	VisitGroupingExpr(expr Grouping) any
 	VisitVariableExpr(expr Variable) any
-  VisitAssignmentExpr(expr Assignment) any
+	VisitAssignmentExpr(expr Assignment) any
+	VisitCallExpr(expr Call) any
+	VisitLogicalExpr(expr Logic) any
 }
 
 type Binary struct {
@@ -39,8 +41,19 @@ type Variable struct {
 }
 
 type Assignment struct {
-	Name Token
-  Value Expr
+	Name  Token
+	Value Expr
+}
+
+type Call struct {
+	Callee    Expr
+	Arguments []Expr
+}
+
+type Logic struct {
+	Left     Expr
+	Operator Token
+	Right    Expr
 }
 
 func (expr *Binary) Apply(v VisitorExpr) any {
@@ -64,10 +77,16 @@ func (expr *Variable) Apply(v VisitorExpr) any {
 }
 
 func (expr *Assignment) Apply(v VisitorExpr) any {
-  return v.VisitAssignmentExpr(*expr)
+	return v.VisitAssignmentExpr(*expr)
 }
 
+func (expr *Call) Apply(v VisitorExpr) any {
+	return v.VisitCallExpr(*expr)
+}
 
+func (expr *Logic) Apply(v VisitorExpr) any {
+	return v.VisitLogicalExpr(*expr)
+}
 
 func (expr *Binary) String() string {
 	return fmt.Sprintf("Binary(%v, %v, %v)", expr.Left, expr.Operator, expr.Right)
@@ -86,9 +105,13 @@ func (expr *Grouping) String() string {
 }
 
 func (expr *Variable) String() string {
-  return fmt.Sprintf("Variable(%v)", expr.Name)
+	return fmt.Sprintf("Variable(%v)", expr.Name)
 }
 
 func (expr *Assignment) String() string {
-  return fmt.Sprintf("Assignment(%v, %v)", expr.Name, expr.Value)
+	return fmt.Sprintf("Assignment(%v, %v)", expr.Name, expr.Value)
+}
+
+func (expr *Logic) String() string {
+	return fmt.Sprintf("Logic(%v, %v, %v)", expr.Left, expr.Operator, expr.Right)
 }
