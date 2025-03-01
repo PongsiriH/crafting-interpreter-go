@@ -8,10 +8,12 @@ type Interpreter struct {
 }
 
 func NewInterpreter() *Interpreter {
-	return &Interpreter{
+  i := Interpreter{
 		globalEnv: &env,
 		env:       &env,
 	}
+  i.globalEnv.Define("clock", GlobalClock{})
+  return &i
 }
 
 func (i *Interpreter) Interpret(statements []Stmt) {
@@ -198,11 +200,30 @@ func (i *Interpreter) VisitWhileStmt(expr WhileStmt) any {
 }
 
 func (i *Interpreter) VisitCallExpr(expr Call) any {
-	// callee := expr.Callee.Apply(i)
-	// args := []any{}
-	// for _, arg := range expr.Arguments {
-	//   args = append(args, arg)
-	// }
-	// callable, _ := callee.(Callable)
+	callee := expr.Callee.Apply(i)
+
+	args := []any{}
+	for _, arg := range expr.Arguments {
+	  args = append(args, arg)
+	}
+	callable, ok := callee.(LoxCallable)
+  if !ok {
+    fmt.Println("Not a function", callable)
+    panic("Trying to call not a function")
+  } 
+  if callable.Arity() != len(args) {
+    panic(fmt.Sprintf("Runtime error: Expected %d arguments but got %d arguments", callable.Arity(), len(args)))
+  }
+
+  callable.Call(i, &args)
 	return nil
+}
+
+func (i *Interpreter) VisitFunctionStmt(stmt FunctionStmt) any {
+  function := &LoxFunction{
+    Declaration: stmt,
+    Closure: i.globalEnv,
+  }
+  i.env.Define(stmt.Name.Lexeme, function)
+  return nil
 }

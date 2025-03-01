@@ -1,0 +1,6 @@
+fun procedure() {
+  print "I am printing: don't return anything";
+}
+
+ var result = procedure();
+ //print result; // ?

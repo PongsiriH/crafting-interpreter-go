@@ -11,6 +11,7 @@ type VisitorStmt interface {
 	VisitBlock(Block) any
 	VisitIfStmt(IfStmt) any
 	VisitWhileStmt(WhileStmt) any
+	VisitFunctionStmt(FunctionStmt) any
 }
 
 type Expression struct {
@@ -41,6 +42,12 @@ type WhileStmt struct {
 	Body      Stmt
 }
 
+type FunctionStmt struct {
+	Name   Token
+	Params []Token
+	Body   Stmt
+}
+
 func (stmt Expression) Apply(v VisitorStmt) any {
 	return v.VisitExpression(stmt)
 }
@@ -63,4 +70,8 @@ func (stmt IfStmt) Apply(v VisitorStmt) any {
 
 func (stmt WhileStmt) Apply(v VisitorStmt) any {
 	return v.VisitWhileStmt(stmt)
+}
+
+func (stmt FunctionStmt) Apply(v VisitorStmt) any {
+	return v.VisitFunctionStmt(stmt)
 }

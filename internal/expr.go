@@ -47,8 +47,10 @@ type Assignment struct {
 
 type Call struct {
 	Callee    Expr
+	paren     Token
 	Arguments []Expr
 }
+
 
 type Logic struct {
 	Left     Expr

@@ -26,6 +26,11 @@ func (p *Parser) Declaration() Stmt {
 		p.Current++
 		return p.VarDeclaration()
 	}
+
+	if p.Match(FUN) {
+		p.Current++
+		return p.Function("function")
+	}
 	return p.Statement()
 }
 
@@ -39,6 +44,27 @@ func (p *Parser) VarDeclaration() Stmt {
 	}
 	p.Consume(SEMICOLON, "Expected semicolon `;' after variable declaration.")
 	return VarDeclare{name.Lexeme, val}
+}
+
+func (p *Parser) Function(kind string) Stmt {
+	p.Consume(IDENTIFIER, "Expected "+kind+" name")
+	name := p.Tokens[p.Current-1]
+	p.Consume(LEFT_PAREN, "Expected left_paren name")
+	params := []Token{}
+	if p.Tokens[p.Current].TokenType != RIGHT_PAREN {
+		for {
+			p.Consume(IDENTIFIER, "Expected parameter name")
+			params = append(params, p.Tokens[p.Current-1])
+			if p.Tokens[p.Current].TokenType != COMMA {
+				break
+			}
+		}
+	}
+	p.Consume(RIGHT_PAREN, "Expected right_paren name")
+
+  p.Consume(LEFT_BRACE, "Expected left_brace ")
+	body := p.BlockStmt()
+	return &FunctionStmt{name, params, body}
 }
 
 func (p *Parser) Statement() Stmt {
@@ -146,27 +172,27 @@ func (p *Parser) ForStmt() Stmt {
 	}
 	p.Consume(RIGHT_PAREN, "Expected opening parenthesis ')' after clauses")
 
-  Body := p.Statement()
+	Body := p.Statement()
 
-  if Increment != nil {
-    Body = Block{[]Stmt{
-      Body,
-      Expression{Increment},
-    }}
-  }
+	if Increment != nil {
+		Body = Block{[]Stmt{
+			Body,
+			Expression{Increment},
+		}}
+	}
 
-  if Cond == nil {
-    Cond = &Literal{true}
-  }
+	if Cond == nil {
+		Cond = &Literal{true}
+	}
 	Body = &WhileStmt{Cond, Body}
 
-  if Initializer != nil {
-    Body = Block{[]Stmt{
-      Initializer,
-      Body,
-    }}
-  }
-  return Body
+	if Initializer != nil {
+		Body = Block{[]Stmt{
+			Initializer,
+			Body,
+		}}
+	}
+	return Body
 }
 
 func (p *Parser) Assignment() Expr {
@@ -257,36 +283,37 @@ func (p *Parser) Unary() Expr {
 		right := p.Unary()
 		return &Unary{op, right}
 	}
-	return p.Primary()
+	return p.Call()
 }
 
-// func (p *Parser) Call() Expr {
-// 	expr := p.Primary()
-// 	for {
-// 		if p.Match(LEFT_PAREN) {
-// 			p.Current++
-// 			expr = p.FinishCall(expr)
-// 		} else {
-// 			break
-// 		}
-// 	}
-// 	return expr
-// }
+func (p *Parser) Call() Expr {
+	expr := p.Primary()
+	for {
+		if p.Match(LEFT_PAREN) {
+			p.Current++
+			expr = p.FinishCall(expr)
+		} else {
+			break
+		}
+	}
+	return expr
+}
 
-// func (p *Parser) FinishCall(callee Expr) Expr {
-// 	arguments := []Expr{}
-// 	if !p.Match(RIGHT_PAREN) {
-// 		for {
-// 			arguments = append(arguments, p.Expression())
-// 			if !p.Match(COMMA) {
-// 				break
-// 			}
-// 			p.Current++
-// 		}
-// 	}
-// 	p.Consume(RIGHT_PAREN, "Expected closing parenthesis ')' after arguments.")
-// 	return &Call{callee, arguments}
-// }
+func (p *Parser) FinishCall(callee Expr) Expr {
+	arguments := []Expr{}
+	if !p.Match(RIGHT_PAREN) {
+		for {
+			arguments = append(arguments, p.Expression())
+			if !p.Match(COMMA) {
+				break
+			}
+			p.Current++
+		}
+	}
+	p.Consume(RIGHT_PAREN, "Expected closing parenthesis ')' after arguments.")
+	paren := p.Tokens[p.Current-1]
+	return &Call{callee, paren, arguments}
+}
 
 func (p *Parser) Primary() Expr {
 	switch p.Tokens[p.Current].TokenType {
